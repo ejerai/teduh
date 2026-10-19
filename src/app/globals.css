@@ -128,3 +128,17 @@
     @apply font-sans;
   }
 }
+
+:root {
+  --background: #f2f2f7;
+  --foreground: #1c1c1e;
+  --card: #ffffff;
+  --card-foreground: #1c1c1e;
+  --primary: #007aff;
+  --primary-foreground: #ffffff;
+  --muted-foreground: #8e8e93;
+  --border: rgb(60 60 67 / 0.12);
+  --input: rgb(60 60 67 / 0.18);
+  --ring: #007aff;
+  --radius: 1rem;
+}
