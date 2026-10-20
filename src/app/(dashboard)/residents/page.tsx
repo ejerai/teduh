@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export default function ResidentsPage() {
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto w-full max-w-[1600px]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Penghuni</h1>

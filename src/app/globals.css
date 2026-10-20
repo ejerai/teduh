@@ -130,15 +130,75 @@
 }
 
 :root {
-  --background: #f2f2f7;
-  --foreground: #1c1c1e;
+  --background: #f6f6f8;
+  --foreground: #111114;
   --card: #ffffff;
-  --card-foreground: #1c1c1e;
-  --primary: #007aff;
+  --card-foreground: #111114;
+  --popover: #ffffff;
+  --popover-foreground: #111114;
+  --primary: #1a6bff;
   --primary-foreground: #ffffff;
-  --muted-foreground: #8e8e93;
-  --border: rgb(60 60 67 / 0.12);
-  --input: rgb(60 60 67 / 0.18);
-  --ring: #007aff;
+  --secondary: #eeeef1;
+  --secondary-foreground: #111114;
+  --muted: #eeeef1;
+  --muted-foreground: #6b6b76;
+  --accent: #eeeef1;
+  --accent-foreground: #111114;
+  --border: rgb(17 17 20 / 0.08);
+  --input: rgb(17 17 20 / 0.12);
+  --ring: #1a6bff;
   --radius: 1rem;
+}
+
+.dark {
+  --background: #0a0a0c;
+  --foreground: #f4f4f6;
+  --card: #141417;
+  --card-foreground: #f4f4f6;
+  --popover: #141417;
+  --popover-foreground: #f4f4f6;
+  --primary: #3d83ff;
+  --primary-foreground: #ffffff;
+  --secondary: #202024;
+  --secondary-foreground: #f4f4f6;
+  --muted: #202024;
+  --muted-foreground: #9b9ba6;
+  --accent: #202024;
+  --accent-foreground: #f4f4f6;
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.14);
+  --ring: #3d83ff;
+}
+
+.hero-glow {
+  background:
+    radial-gradient(70% 120% at 88% 115%, color-mix(in oklab, var(--primary) 34%, transparent), transparent 62%),
+    linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--muted) 70%, var(--card)) 30%,
+      color-mix(in oklab, var(--primary) 8%, var(--card)) 100%
+    );
+}
+
+.hero-art-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 38%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 38%);
+}
+/* transisi tema */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
+}
+
+html[data-theme-switching] .theme-anim {
+  transition-property: transform, opacity !important;
+  transition-duration: 350ms !important;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1) !important;
 }

@@ -45,26 +45,26 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-center @2xl:justify-between">
+        <div className="relative w-full @2xl:max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari nama, kamar, atau wali"
-            className="h-10 rounded-xl bg-white pl-9"
+            className="h-11 rounded-2xl border-0 bg-muted pl-10 shadow-none"
           />
         </div>
 
-        <div className="inline-flex rounded-xl bg-black/5 p-1">
+        <div className="inline-flex max-w-full overflow-x-auto rounded-2xl bg-muted p-1">
           {filters.map((f) => (
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
+                "rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all",
                 filter === f.value
-                  ? "bg-white shadow-sm"
+                  ? "bg-card shadow-sm"
                   : "text-foreground/60 hover:text-foreground"
               )}
             >
@@ -74,15 +74,15 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-black/5">
+      <div className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="pl-6">Nama</TableHead>
               <TableHead>Umur</TableHead>
               <TableHead>Kamar</TableHead>
-              <TableHead>Masuk</TableHead>
-              <TableHead>Wali</TableHead>
+              <TableHead className="hidden @2xl:table-cell">Masuk</TableHead>
+              <TableHead className="hidden @4xl:table-cell">Wali</TableHead>
               <TableHead className="pr-6">Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -96,8 +96,10 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
                 </TableCell>
                 <TableCell>{getAge(r.birthDate)} th</TableCell>
                 <TableCell>{r.roomNumber}</TableCell>
-                <TableCell>{formatDate(r.admissionDate)}</TableCell>
-                <TableCell>
+                <TableCell className="hidden @2xl:table-cell">
+                  {formatDate(r.admissionDate)}
+                </TableCell>
+                <TableCell className="hidden @4xl:table-cell">
                   {r.guardian.name}
                   <span className="text-muted-foreground"> ({r.guardian.relationship})</span>
                 </TableCell>
