@@ -5,9 +5,9 @@ import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DURATION = 2050; // ms, lama lingkaran melebar
+const DURATION = 1000; // ms, lama lingkaran melebar
 const EASING = "cubic-bezier(0.32, 0.72, 0, 1)";
-const BLUR = 45; // px, tingkat blur awal halaman baru
+const BLUR = 32; // px, tingkat blur awal halaman baru
 
 type Mode = "light" | "dark";
 type ViewTransitionLike = {

@@ -15,3 +15,14 @@ export function getAge(birthDate: string) {
   if (m < 0 || (m === 0 && now.getUTCDate() < birth.getUTCDate())) age--;
   return age;
 }
+
+export function formatDateTime(iso: string) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }).format(new Date(iso));
+}

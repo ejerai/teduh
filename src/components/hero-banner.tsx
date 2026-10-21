@@ -17,7 +17,7 @@ export function HeroBanner() {
 
       <div className="flex min-h-[300px] max-w-lg flex-col items-start justify-center p-6 @2xl:p-9">
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-medium text-muted-foreground dark:bg-white/10">
-          Beranda petugas
+          Beranda pengurus
         </span>
 
         <h2 className="mt-4 text-2xl font-medium tracking-tight @2xl:text-[28px]">
