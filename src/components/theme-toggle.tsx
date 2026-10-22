@@ -18,7 +18,7 @@ type DocWithViewTransition = Document & {
   startViewTransition?: (callback: () => void) => ViewTransitionLike;
 };
 
-function useThemeSwitch() {
+export function useThemeSwitch() {
   const { setTheme } = useTheme();
 
   return (next: Mode, origin: HTMLElement) => {

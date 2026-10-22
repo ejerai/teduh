@@ -12,7 +12,9 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
+import { SettingsDialog } from "@/components/settings-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { supportUrl } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 export const navItems = [
@@ -22,10 +24,14 @@ export const navItems = [
   { href: "/reports", label: "Laporan", icon: FileBarChart },
 ];
 
-const bottomItems = [
-  { href: "/support", label: "Bantuan", icon: Headset },
-  { href: "/settings", label: "Pengaturan", icon: Settings },
-];
+export function navItemClass(active: boolean) {
+  return cn(
+    "flex w-full items-center gap-3 whitespace-nowrap rounded-2xl px-3.5 py-3 text-left text-sm font-medium transition-all",
+    active
+      ? "bg-primary text-primary-foreground shadow-sm"
+      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+  );
+}
 
 function SidebarToggleIcon({
   open,
@@ -51,6 +57,14 @@ function SidebarToggleIcon({
   );
 }
 
+function Label({ children, expanded }: { children: React.ReactNode; expanded: boolean }) {
+  return (
+    <span className={cn("transition-opacity duration-200", expanded ? "opacity-100" : "opacity-0")}>
+      {children}
+    </span>
+  );
+}
+
 function NavLink({
   href,
   label,
@@ -65,31 +79,16 @@ function NavLink({
   expanded: boolean;
 }) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "flex items-center gap-3 whitespace-nowrap rounded-2xl px-3.5 py-3 text-sm font-medium transition-all",
-        active
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      )}
-    >
+    <Link href={href} className={navItemClass(active)}>
       <Icon className="size-5 shrink-0" />
-      <span
-        className={cn(
-          "transition-opacity duration-200",
-          expanded ? "opacity-100" : "opacity-0"
-        )}
-      >
-        {label}
-      </span>
+      <Label expanded={expanded}>{label}</Label>
     </Link>
   );
 }
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [pinned, setPinned] = useState(true); // true = terkunci terbuka
+  const [pinned, setPinned] = useState(true);
   const [hovered, setHovered] = useState(false);
 
   const expanded = pinned || hovered;
@@ -101,7 +100,7 @@ export function Sidebar() {
   }
 
   return (
-    // Pembungkus menjaga lebar di layout; berubah hanya saat tombol diklik
+    // layout service
     <div
       className={cn(
         "relative hidden shrink-0 transition-[width] duration-300 ease-out md:block",
@@ -160,14 +159,25 @@ export function Sidebar() {
 
         {/* Bagian bawah */}
         <div className="mt-auto flex flex-col gap-1">
-          {bottomItems.map((item) => (
-            <NavLink
-              key={item.href}
-              {...item}
-              active={pathname.startsWith(item.href)}
-              expanded={expanded}
-            />
-          ))}
+          <a
+            href={supportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={navItemClass(false)}
+          >
+            <Headset className="size-5 shrink-0" />
+            <Label expanded={expanded}>Bantuan</Label>
+          </a>
+
+          <SettingsDialog
+            trigger={
+              <button type="button" className={navItemClass(false)}>
+                <Settings className="size-5 shrink-0" />
+                <Label expanded={expanded}>Pengaturan</Label>
+              </button>
+            }
+          />
+
           <div className="mt-2 px-1 pb-1">
             <ThemeToggle compact={!expanded} />
           </div>

@@ -1,10 +1,12 @@
 "use client";
 
+import { Headset, Menu, Settings, X } from "lucide-react";
+import { SettingsDialog } from "@/components/settings-dialog";
+import { navItemClass, navItems } from "@/components/sidebar";
+import { supportUrl } from "@/lib/config";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { navItems } from "@/components/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -29,14 +31,14 @@ export function MobileNav() {
         onClick={() => setOpen(false)}
         className={cn(
           "fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
+          open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
 
       <aside
         className={cn(
           "fixed left-0 top-0 z-50 flex h-full w-72 flex-col bg-card p-4 shadow-2xl transition-transform duration-300 ease-out",
-          open ? "translate-x-0" : "-translate-x-full"
+          open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-14 items-center justify-between">
@@ -45,7 +47,9 @@ export function MobileNav() {
               T
             </div>
             <div>
-              <p className="text-lg font-semibold leading-tight tracking-tight">Teduh</p>
+              <p className="text-lg font-semibold leading-tight tracking-tight">
+                Teduh
+              </p>
               <p className="text-xs text-muted-foreground">Kemah Beth Shalom</p>
             </div>
           </div>
@@ -70,7 +74,7 @@ export function MobileNav() {
                   "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-colors",
                   active
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 <Icon className="size-5 shrink-0" />
@@ -80,8 +84,27 @@ export function MobileNav() {
           })}
         </nav>
 
-        <div className="mt-auto pt-4">
-          <ThemeToggle />
+        <div className="mt-auto space-y-1 pt-4">
+          <a
+            href={supportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={navItemClass(false)}
+          >
+            <Headset className="size-5 shrink-0" />
+            Bantuan
+          </a>
+          <SettingsDialog
+            trigger={
+              <button type="button" className={navItemClass(false)}>
+                <Settings className="size-5 shrink-0" />
+                Pengaturan
+              </button>
+            }
+          />
+          <div className="px-1 pt-3">
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
     </div>
