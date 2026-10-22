@@ -12,25 +12,16 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-xl font-semibold text-primary-foreground">
-              T
-            </div>
-            <div>
-              <p className="text-lg font-semibold leading-tight tracking-tight">Teduh</p>
-              <p className="text-xs text-muted-foreground">Kemah Beth Shalom</p>
-            </div>
-          </div>
 
           <h1 className="mt-10 text-3xl font-semibold tracking-tight">Masuk</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Gunakan akun petugas yang diberikan oleh admin panti.
+            Halo, Selamat datang.
           </p>
 
           <LoginForm />
 
           <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
-            Lupa kata sandi? Hubungi admin panti.
+            Lupa kata sandi? Hubungi admin panti. <a className="text-primary" href="https://teduh-nine.vercel.app/dashboard">Lihat dashboard.</a>
           </p>
         </div>
       </div>
