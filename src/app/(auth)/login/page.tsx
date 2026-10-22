@@ -15,7 +15,7 @@ export default function LoginPage() {
 
           <h1 className="mt-10 text-3xl font-semibold tracking-tight">Masuk</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Selamat datang, Panti Jompo & Panti Asuhan Kemah Beth Shalom.
+            Panti Jompo & Panti Asuhan Kemah Beth Shalom.
           </p>
 
           <LoginForm />
