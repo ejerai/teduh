@@ -21,7 +21,7 @@ export default function LoginPage() {
           <LoginForm />
 
           <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
-            Lupa kata sandi? Hubungi admin panti. <a className="text-primary" href="https://teduh-nine.vercel.app/dashboard">Lihat dashboard.</a>
+            Lupa kata sandi? Hubungi admin panti. <a className="text-primary" href="https://kemahbeth.vercel.app/dashboard">Lihat dashboard.</a>
           </p>
         </div>
       </div>
