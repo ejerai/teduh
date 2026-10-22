@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import type { ResidentStatus } from "@/types/resident";
 
 /* ---------- Data contoh (fiktif) ---------- */
-
+ 
 const previewResidents: {
   name: string;
   initials: string;
