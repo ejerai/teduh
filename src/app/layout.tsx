@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: "Teduh",
   description:
     "Sistem informasi manajemen data penghuni Panti Jompo Kemah Beth Shalom.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2F6BF5",
 };
 
 export default function RootLayout({
