@@ -20,7 +20,7 @@ import { supportUrl } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import type { ResidentStatus } from "@/types/resident";
 
-/* ---------- Data contoh (fiktif) ---------- */
+/* data fiktif */
 
 const previewResidents: {
   name: string;
@@ -210,12 +210,11 @@ function FeatureSection({
   );
 }
 
-/* ---------- Halaman ---------- */
+/* main */
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar melayang */}
       <header className="sticky top-3 z-50 px-3">
         <nav className="mx-auto flex h-12 w-full max-w-2xl items-center justify-between gap-4 rounded-full border border-border bg-card/80 pl-3 pr-1.5 shadow-sm backdrop-blur-xl">
           <Link href="/" className="flex items-center gap-2">
