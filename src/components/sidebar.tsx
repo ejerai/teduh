@@ -16,6 +16,7 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supportUrl } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/logo";
 
 export const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -119,9 +120,7 @@ export function Sidebar() {
         {/* Header: logo + tombol buka/tutup */}
         <div className="flex h-14 items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="mx-1 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-semibold text-primary-foreground">
-              T
-            </div>
+            <LogoMark className="mx-1 size-9 text-primary" />
             <div
               className={cn(
                 "min-w-0 whitespace-nowrap transition-opacity duration-200",

@@ -19,6 +19,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { supportUrl } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import type { ResidentStatus } from "@/types/resident";
+import { LogoMark } from "@/components/logo";
 
 /* data fiktif */
 
@@ -218,9 +219,7 @@ export default function LandingPage() {
       <header className="sticky top-3 z-50 px-3">
         <nav className="mx-auto flex h-12 w-full max-w-2xl items-center justify-between gap-4 rounded-full border border-border bg-card/80 pl-3 pr-1.5 shadow-sm backdrop-blur-xl">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
-              T
-            </div>
+            <LogoMark className="size-7 text-primary" />
             <span className="font-semibold tracking-tight">Teduh</span>
           </Link>
 
@@ -290,9 +289,7 @@ export default function LandingPage() {
           <div className="mx-auto mt-12 max-w-6xl rounded-[32px] border border-border bg-muted/40 p-3 sm:p-4">
             <div className="flex items-center justify-between px-3 py-2">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
-                  T
-                </div>
+                <LogoMark className="size-7 text-primary" />
                 <p className="text-sm font-medium">Penghuni terbaru</p>
               </div>
               <p className="text-xs text-muted-foreground">Contoh tampilan</p>
@@ -586,9 +583,7 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-6xl gap-10 text-sm md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
-                T
-              </div>
+              <LogoMark className="size-7 text-primary" />
               <span className="font-semibold">Teduh</span>
             </div>
             <p className="mt-3 max-w-xs leading-relaxed text-muted-foreground">

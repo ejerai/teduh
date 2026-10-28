@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/logo";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -24,7 +25,10 @@ export function MobileNav() {
         >
           <Menu className="size-5" />
         </button>
-        <span className="font-semibold tracking-tight">Teduh</span>
+        <span className="flex items-center gap-2 font-semibold tracking-tight">
+          <LogoMark className="size-6 text-primary" />
+          Teduh
+        </span>
       </header>
 
       <div
@@ -43,9 +47,7 @@ export function MobileNav() {
       >
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl bg-primary text-lg font-semibold text-primary-foreground">
-              T
-            </div>
+            <LogoMark className="size-9 text-primary" />
             <div>
               <p className="text-lg font-semibold leading-tight tracking-tight">
                 Teduh
