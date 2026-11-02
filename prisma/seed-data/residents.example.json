@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-10-01",
+  "residents": [
+    {
+      "fullName": "Contoh Satu",
+      "nickname": "Satu",
+      "gender": "P",
+      "birthDate": "1950-03-10",
+      "clothingSize": "M",
+      "stayMonths": 36,
+      "referral": "Datang sendiri",
+      "mobility": "tongkat",
+      "healthNotes": "Contoh catatan"
+    },
+    {
+      "fullName": "Contoh Dua",
+      "gender": "L",
+      "birthDate": "1948-08-21",
+      "clothingSize": "L",
+      "stayMonths": 8,
+      "referral": "Contoh rujukan"
+    }
+  ]
+}
