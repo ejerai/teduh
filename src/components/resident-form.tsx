@@ -1,54 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import {
+  createResidentAction,
+  updateResidentAction,
+  type ResidentFormState,
+} from "@/app/actions/residents";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CLOTHING_SIZES, MOBILITIES, mobilityLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import type { Resident, ResidentStatus } from "@/types/resident";
+import type { Resident } from "@/types/resident";
 
 interface FormValues {
   fullName: string;
+  nickname: string;
   gender: "L" | "P";
   birthDate: string;
-  roomNumber: string;
+  clothingSize: string;
   admissionDate: string;
-  status: ResidentStatus;
-  guardianName: string;
-  guardianRelationship: string;
-  guardianPhone: string;
+  admissionApprox: boolean;
+  referral: string;
+  mobility: string;
+  healthNotes: string;
+  status: "aktif" | "keluar";
 }
 
 const emptyValues: FormValues = {
   fullName: "",
-  gender: "L",
+  nickname: "",
+  gender: "P",
   birthDate: "",
-  roomNumber: "",
+  clothingSize: "",
   admissionDate: "",
+  admissionApprox: false,
+  referral: "",
+  mobility: "",
+  healthNotes: "",
   status: "aktif",
-  guardianName: "",
-  guardianRelationship: "",
-  guardianPhone: "",
 };
 
 function toValues(r: Resident): FormValues {
   return {
     fullName: r.fullName,
+    nickname: r.nickname ?? "",
     gender: r.gender,
     birthDate: r.birthDate,
-    roomNumber: r.roomNumber,
-    admissionDate: r.admissionDate,
+    clothingSize: r.clothingSize ?? "",
+    admissionDate: r.admissionDate ?? "",
+    admissionApprox: r.admissionApprox,
+    referral: r.referral ?? "",
+    mobility: r.mobility ?? "",
+    healthNotes: r.healthNotes ?? "",
     status: r.status,
-    guardianName: r.guardian.name,
-    guardianRelationship: r.guardian.relationship,
-    guardianPhone: r.guardian.phone,
   };
 }
 
-const inputClass =
-  "h-11 rounded-2xl bg-muted/60 shadow-none dark:[color-scheme:dark]";
+const inputClass = "h-11 rounded-2xl bg-muted/60 shadow-none dark:[color-scheme:dark]";
+const selectClass =
+  "h-11 w-full rounded-2xl border border-input bg-muted/60 px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
 
 function Panel({
   title,
@@ -62,9 +75,7 @@ function Panel({
   return (
     <section className="rounded-3xl border border-border bg-card p-5 shadow-sm @lg:p-6">
       <h2 className="text-base font-semibold tracking-tight">{title}</h2>
-      {description && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      )}
+      {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       <div className="mt-5 grid gap-5 @2xl:grid-cols-2">{children}</div>
     </section>
   );
@@ -74,12 +85,14 @@ function Field({
   label,
   htmlFor,
   required,
+  error,
   className,
   children,
 }: {
   label: string;
   htmlFor?: string;
   required?: boolean;
+  error?: string;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -90,24 +103,25 @@ function Field({
         {required && <span className="text-destructive"> *</span>}
       </Label>
       {children}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
 
 function Segmented<T extends string>({
+  name,
   value,
   onChange,
   options,
 }: {
+  name: string;
   value: T;
   onChange: (value: T) => void;
   options: { value: T; label: string }[];
 }) {
   return (
-    <div
-      role="radiogroup"
-      className="inline-flex max-w-full overflow-x-auto rounded-2xl bg-muted p-1"
-    >
+    <div role="radiogroup" className="inline-flex max-w-full overflow-x-auto rounded-2xl bg-muted p-1">
+      <input type="hidden" name={name} value={value} />
       {options.map((o) => (
         <button
           key={o.value}
@@ -117,9 +131,7 @@ function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={cn(
             "rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all",
-            value === o.value
-              ? "bg-card shadow-sm"
-              : "text-foreground/60 hover:text-foreground"
+            value === o.value ? "bg-card shadow-sm" : "text-foreground/60 hover:text-foreground"
           )}
         >
           {o.label}
@@ -130,42 +142,34 @@ function Segmented<T extends string>({
 }
 
 export function ResidentForm({ resident }: { resident?: Resident }) {
-  const [values, setValues] = useState<FormValues>(
-    resident ? toValues(resident) : emptyValues
-  );
-  const [saved, setSaved] = useState(false);
+  const action = resident
+    ? updateResidentAction.bind(null, resident.id)
+    : createResidentAction;
+  const [state, formAction, pending] = useActionState<ResidentFormState, FormData>(action, {});
+  const [values, setValues] = useState<FormValues>(resident ? toValues(resident) : emptyValues);
 
   function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
-    setSaved(false);
   }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    console.log("Data form (belum disimpan ke database):", values);
-    setSaved(true);
-  }
+  const err = state.errors ?? {};
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {saved && (
+    <form action={formAction} className="space-y-4">
+      {state.message && (
         <div
-          role="status"
-          className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+          role="alert"
+          className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300"
         >
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
-          <p>
-            Form valid. Data belum benar-benar tersimpan karena penyimpanan ke
-            database dikerjakan di tahap backend. Isinya bisa dilihat di
-            console browser (F12).
-          </p>
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <p>{state.message}</p>
         </div>
       )}
 
       <Panel title="Data penghuni" description="Kolom bertanda * wajib diisi.">
-        <Field label="Nama lengkap" htmlFor="fullName" required className="@2xl:col-span-2">
+        <Field label="Nama lengkap" htmlFor="fullName" required error={err.fullName} className="@2xl:col-span-2">
           <Input
             id="fullName"
+            name="fullName"
             required
             value={values.fullName}
             onChange={(e) => set("fullName", e.target.value)}
@@ -174,8 +178,20 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
           />
         </Field>
 
-        <Field label="Jenis kelamin" required>
+        <Field label="Nama panggilan" htmlFor="nickname" error={err.nickname}>
+          <Input
+            id="nickname"
+            name="nickname"
+            value={values.nickname}
+            onChange={(e) => set("nickname", e.target.value)}
+            placeholder="Contoh: Yoke"
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Jenis kelamin" required error={err.gender}>
           <Segmented
+            name="gender"
             value={values.gender}
             onChange={(v) => set("gender", v)}
             options={[
@@ -185,21 +201,10 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
           />
         </Field>
 
-        <Field label="Status" required>
-          <Segmented
-            value={values.status}
-            onChange={(v) => set("status", v)}
-            options={[
-              { value: "aktif", label: "Aktif" },
-              { value: "dirawat", label: "Dirawat" },
-              { value: "keluar", label: "Keluar" },
-            ]}
-          />
-        </Field>
-
-        <Field label="Tanggal lahir" htmlFor="birthDate" required>
+        <Field label="Tanggal lahir" htmlFor="birthDate" required error={err.birthDate}>
           <Input
             id="birthDate"
+            name="birthDate"
             type="date"
             required
             value={values.birthDate}
@@ -208,64 +213,97 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
           />
         </Field>
 
-        <Field label="Tanggal masuk" htmlFor="admissionDate" required>
+        <Field label="Ukuran baju" htmlFor="clothingSize" error={err.clothingSize}>
+          <select
+            id="clothingSize"
+            name="clothingSize"
+            value={values.clothingSize}
+            onChange={(e) => set("clothingSize", e.target.value)}
+            className={selectClass}
+          >
+            <option value="">Belum dicatat</option>
+            {CLOTHING_SIZES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Status" required error={err.status}>
+          <Segmented
+            name="status"
+            value={values.status}
+            onChange={(v) => set("status", v)}
+            options={[
+              { value: "aktif", label: "Aktif" },
+              { value: "keluar", label: "Keluar" },
+            ]}
+          />
+        </Field>
+      </Panel>
+
+      <Panel title="Masuk panti" description="Jika hanya tahu lama tinggalnya, isi perkiraan tanggal lalu centang kotak perkiraan.">
+        <Field label="Tanggal masuk" htmlFor="admissionDate" error={err.admissionDate}>
           <Input
             id="admissionDate"
+            name="admissionDate"
             type="date"
-            required
             value={values.admissionDate}
             onChange={(e) => set("admissionDate", e.target.value)}
             className={inputClass}
           />
+          <label className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              name="admissionApprox"
+              checked={values.admissionApprox}
+              onChange={(e) => set("admissionApprox", e.target.checked)}
+              className="size-4 accent-[var(--primary)]"
+            />
+            Tanggal ini perkiraan
+          </label>
         </Field>
 
-        <Field label="Nomor kamar" htmlFor="roomNumber" required>
+        <Field label="Asal rujukan" htmlFor="referral" error={err.referral}>
           <Input
-            id="roomNumber"
-            required
-            value={values.roomNumber}
-            onChange={(e) => set("roomNumber", e.target.value)}
-            placeholder="Contoh: A-01"
+            id="referral"
+            name="referral"
+            value={values.referral}
+            onChange={(e) => set("referral", e.target.value)}
+            placeholder="Contoh: Dinas Sosial, Pak John, datang sendiri"
             className={inputClass}
           />
         </Field>
       </Panel>
 
-      <Panel
-        title="Wali / kontak keluarga"
-        description="Orang yang dihubungi untuk keperluan penghuni."
-      >
-        <Field label="Nama wali" htmlFor="guardianName" required>
-          <Input
-            id="guardianName"
-            required
-            value={values.guardianName}
-            onChange={(e) => set("guardianName", e.target.value)}
-            className={inputClass}
-          />
+      <Panel title="Kondisi" description="Opsional. Catat alat bantu dan kondisi yang perlu diketahui pengasuh.">
+        <Field label="Alat bantu" htmlFor="mobility" error={err.mobility}>
+          <select
+            id="mobility"
+            name="mobility"
+            value={values.mobility}
+            onChange={(e) => set("mobility", e.target.value)}
+            className={selectClass}
+          >
+            <option value="">Belum dicatat</option>
+            {MOBILITIES.map((m) => (
+              <option key={m} value={m}>
+                {mobilityLabel[m]}
+              </option>
+            ))}
+          </select>
         </Field>
 
-        <Field label="Hubungan" htmlFor="guardianRelationship" required>
-          <Input
-            id="guardianRelationship"
-            required
-            value={values.guardianRelationship}
-            onChange={(e) => set("guardianRelationship", e.target.value)}
-            placeholder="Contoh: Anak, Cucu, Istri"
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label="Nomor telepon" htmlFor="guardianPhone" required className="@2xl:col-span-2">
-          <Input
-            id="guardianPhone"
-            type="tel"
-            inputMode="tel"
-            required
-            value={values.guardianPhone}
-            onChange={(e) => set("guardianPhone", e.target.value)}
-            placeholder="08xxxxxxxxxx"
-            className={inputClass}
+        <Field label="Catatan kesehatan" htmlFor="healthNotes" error={err.healthNotes} className="@2xl:col-span-2">
+          <textarea
+            id="healthNotes"
+            name="healthNotes"
+            rows={3}
+            value={values.healthNotes}
+            onChange={(e) => set("healthNotes", e.target.value)}
+            placeholder="Contoh: pengapuran, stroke kronis"
+            className="w-full rounded-2xl border border-input bg-muted/60 px-3 py-2.5 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           />
         </Field>
       </Panel>
@@ -273,15 +311,12 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
       <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
         <Link
           href={resident ? `/residents/${resident.id}` : "/residents"}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-11 rounded-xl px-5"
-          )}
+          className={cn(buttonVariants({ variant: "outline" }), "h-11 rounded-xl px-5")}
         >
           Batal
         </Link>
-        <Button type="submit" className="h-11 rounded-xl px-6">
-          Simpan
+        <Button type="submit" disabled={pending} className="h-11 rounded-xl px-6">
+          {pending ? "Menyimpan..." : "Simpan"}
         </Button>
       </div>
     </form>

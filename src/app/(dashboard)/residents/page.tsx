@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { ResidentsTable } from "@/components/residents-table";
-import { residents } from "@/data/residents";
+import { getResidents } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export default function ResidentsPage() {
+export default async function ResidentsPage() {
+  const residents = await getResidents();
+
   return (
     <div className="mx-auto w-full max-w-[1600px]">
       <div className="flex items-start justify-between gap-4">

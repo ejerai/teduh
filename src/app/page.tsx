@@ -43,7 +43,7 @@ const previewResidents: {
     name: "Maria Magdalena",
     initials: "MM",
     room: "A-03",
-    status: "dirawat",
+    status: "aktif",
     points: ["Masuk 15 Februari 2021", "Wali: Daniel Magdalena (Cucu)", "8 berkas terunggah"],
     by: "Maria Lestari",
   },

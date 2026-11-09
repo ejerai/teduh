@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   Check,
@@ -28,15 +29,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useThemeSwitch } from "@/components/theme-toggle";
+import { useSession } from "@/components/session-provider";
+import {
+  changePasswordAction,
+  createStaffAction,
+  updateProfileAction,
+  updateStaffAction,
+  type ActionResult,
+} from "@/app/actions/staff";
 import { cn } from "@/lib/utils";
 import type { StaffRole } from "@/types/history";
-
-// Sementara tetap. Setelah login sungguhan dibuat, data ini diambil dari sesi pengguna.
-const currentUser = {
-  name: "Andre Pratama",
-  email: "andre@teduh.test",
-  role: "admin" as StaffRole,
-};
 
 const roleLabel: Record<StaffRole, string> = {
   admin: "Admin",
@@ -131,10 +133,13 @@ function Switch({
 /* ---------- Tab: Akun saya ---------- */
 
 function AccountTab() {
-  const [name, setName] = useState(currentUser.name);
-  const [profileSaved, setProfileSaved] = useState(false);
+  const { user } = useSession();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [name, setName] = useState(user.name);
+  const [profileMessage, setProfileMessage] = useState<ActionResult | null>(null);
   const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
-  const [pwMessage, setPwMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pwMessage, setPwMessage] = useState<ActionResult | null>(null);
 
   const initials = name
     .split(" ")
@@ -144,24 +149,27 @@ function AccountTab() {
 
   function saveProfile(e: React.FormEvent) {
     e.preventDefault();
-    setProfileSaved(true);
+    startTransition(async () => {
+      setProfileMessage(await updateProfileAction(name));
+      router.refresh();
+    });
   }
 
   function savePassword(e: React.FormEvent) {
     e.preventDefault();
     if (pw.next.length < 8) {
-      setPwMessage({ ok: false, text: "Kata sandi baru minimal 8 karakter." });
+      setPwMessage({ ok: false, message: "Kata sandi baru minimal 8 karakter." });
       return;
     }
     if (pw.next !== pw.confirm) {
-      setPwMessage({ ok: false, text: "Konfirmasi kata sandi tidak sama." });
+      setPwMessage({ ok: false, message: "Konfirmasi kata sandi tidak sama." });
       return;
     }
-    setPwMessage({
-      ok: true,
-      text: "Form valid. Kata sandi benar-benar diperbarui setelah backend terhubung.",
+    startTransition(async () => {
+      const result = await changePasswordAction(pw.current, pw.next);
+      setPwMessage(result);
+      if (result.ok) setPw({ current: "", next: "", confirm: "" });
     });
-    setPw({ current: "", next: "", confirm: "" });
   }
 
   return (
@@ -175,7 +183,7 @@ function AccountTab() {
             <div>
               <p className="font-medium">{name || "Tanpa nama"}</p>
               <span className="mt-1 inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                {roleLabel[currentUser.role]}
+                {roleLabel[user.role]}
               </span>
             </div>
           </div>
@@ -187,26 +195,21 @@ function AccountTab() {
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
-                setProfileSaved(false);
+                setProfileMessage(null);
               }}
               className={fieldClass}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="set-email">Email</Label>
-            <Input id="set-email" value={currentUser.email} disabled className={fieldClass} />
+            <Input id="set-email" value={user.email} disabled className={fieldClass} />
             <p className="text-xs text-muted-foreground">
               Email dipakai untuk masuk dan hanya bisa diubah oleh admin.
             </p>
           </div>
 
-          {profileSaved && (
-            <Notice ok>
-              Perubahan profil tersimpan sementara. Penyimpanan permanen aktif setelah
-              backend terhubung.
-            </Notice>
-          )}
-          <Button type="submit" className="h-10 rounded-xl px-5">
+          {profileMessage && <Notice ok={profileMessage.ok}>{profileMessage.message}</Notice>}
+          <Button type="submit" disabled={pending} className="h-10 rounded-xl px-5">
             Simpan profil
           </Button>
         </form>
@@ -252,8 +255,8 @@ function AccountTab() {
               />
             </div>
           </div>
-          {pwMessage && <Notice ok={pwMessage.ok}>{pwMessage.text}</Notice>}
-          <Button type="submit" variant="outline" className="h-10 rounded-xl px-5">
+          {pwMessage && <Notice ok={pwMessage.ok}>{pwMessage.message}</Notice>}
+          <Button type="submit" variant="outline" disabled={pending} className="h-10 rounded-xl px-5">
             Perbarui kata sandi
           </Button>
         </form>
@@ -309,20 +312,6 @@ function AppearanceTab() {
 
 /* ---------- Tab: Petugas & peran (admin) ---------- */
 
-interface Staff {
-  id: string;
-  name: string;
-  email: string;
-  role: StaffRole;
-  active: boolean;
-}
-
-const initialStaff: Staff[] = [
-  { id: "s-1", name: "Andre Pratama", email: "andre@teduh.test", role: "admin", active: true },
-  { id: "s-2", name: "Ratna Dewi", email: "ratna@teduh.test", role: "petugas", active: true },
-  { id: "s-3", name: "Maria Lestari", email: "maria@teduh.test", role: "pengasuh", active: true },
-];
-
 const permissions: { label: string; access: [boolean, boolean, boolean] }[] = [
   { label: "Melihat data penghuni", access: [true, true, true] },
   { label: "Menambah dan mengubah penghuni", access: [true, true, false] },
@@ -334,22 +323,38 @@ const permissions: { label: string; access: [boolean, boolean, boolean] }[] = [
 ];
 
 function StaffTab() {
-  const [staff, setStaff] = useState<Staff[]>(initialStaff);
+  const { user, staff } = useSession();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState({ name: "", email: "", role: "petugas" as StaffRole });
+  const [message, setMessage] = useState<ActionResult | null>(null);
+  const [draft, setDraft] = useState({
+    name: "",
+    email: "",
+    role: "petugas" as StaffRole,
+    password: "",
+  });
 
-  function update(id: string, patch: Partial<Staff>) {
-    setStaff((list) => list.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  function run(task: () => Promise<ActionResult>, onOk?: () => void) {
+    startTransition(async () => {
+      const result = await task();
+      setMessage(result);
+      if (result.ok) {
+        onOk?.();
+        router.refresh();
+      }
+    });
   }
 
   function add(e: React.FormEvent) {
     e.preventDefault();
-    setStaff((list) => [
-      ...list,
-      { id: `s-${Date.now()}`, name: draft.name, email: draft.email, role: draft.role, active: true },
-    ]);
-    setDraft({ name: "", email: "", role: "petugas" });
-    setAdding(false);
+    run(
+      () => createStaffAction(draft),
+      () => {
+        setDraft({ name: "", email: "", role: "petugas", password: "" });
+        setAdding(false);
+      },
+    );
   }
 
   return (
@@ -358,9 +363,14 @@ function StaffTab() {
         title="Akun petugas"
         description="Atur siapa yang boleh masuk dan apa peran mereka. Akun yang dinonaktifkan tidak bisa masuk."
       >
+        {message && (
+          <div className="mb-3">
+            <Notice ok={message.ok}>{message.message}</Notice>
+          </div>
+        )}
         <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
           {staff.map((s) => {
-            const isSelf = s.email === currentUser.email;
+            const isSelf = s.id === user.id;
             return (
               <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1">
@@ -373,8 +383,10 @@ function StaffTab() {
                 <select
                   aria-label={`Peran ${s.name}`}
                   value={s.role}
-                  disabled={isSelf}
-                  onChange={(e) => update(s.id, { role: e.target.value as StaffRole })}
+                  disabled={isSelf || pending}
+                  onChange={(e) =>
+                    run(() => updateStaffAction(s.id, { role: e.target.value as StaffRole }))
+                  }
                   className={selectClass}
                 >
                   {(Object.keys(roleLabel) as StaffRole[]).map((r) => (
@@ -386,8 +398,8 @@ function StaffTab() {
                 <Switch
                   label={`Aktifkan akun ${s.name}`}
                   checked={s.active}
-                  disabled={isSelf}
-                  onChange={(v) => update(s.id, { active: v })}
+                  disabled={isSelf || pending}
+                  onChange={(v) => run(() => updateStaffAction(s.id, { active: v }))}
                 />
               </li>
             );
@@ -418,6 +430,22 @@ function StaffTab() {
                   className={fieldClass}
                 />
               </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="new-password">Kata sandi awal</Label>
+                <Input
+                  id="new-password"
+                  type="text"
+                  autoComplete="off"
+                  required
+                  minLength={8}
+                  value={draft.password}
+                  onChange={(e) => setDraft({ ...draft, password: e.target.value })}
+                  className={fieldClass}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Minimal 8 karakter. Petugas bisa menggantinya sendiri setelah masuk.
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <select
@@ -436,7 +464,7 @@ function StaffTab() {
                 <Button type="button" variant="outline" className="h-10 rounded-xl" onClick={() => setAdding(false)}>
                   Batal
                 </Button>
-                <Button type="submit" className="h-10 rounded-xl">
+                <Button type="submit" disabled={pending} className="h-10 rounded-xl">
                   Tambah
                 </Button>
               </div>
@@ -561,10 +589,11 @@ function SecurityTab({ onNavigate }: { onNavigate: () => void }) {
 /* ---------- Dialog ---------- */
 
 export function SettingsDialog({ trigger }: { trigger: React.ReactNode }) {
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TabId>("akun");
 
-  const visibleTabs = tabs.filter((t) => !t.adminOnly || currentUser.role === "admin");
+  const visibleTabs = tabs.filter((t) => !t.adminOnly || user.role === "admin");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

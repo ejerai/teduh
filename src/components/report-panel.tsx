@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate, getAge } from "@/lib/format";
+import { formatAdmission, getAge, getStay } from "@/lib/format";
+import { genderLabel, mobilityLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { Resident, ResidentStatus } from "@/types/resident";
 
@@ -21,13 +22,11 @@ type Filter = "semua" | ResidentStatus;
 const filters: { value: Filter; label: string }[] = [
   { value: "semua", label: "Semua" },
   { value: "aktif", label: "Aktif" },
-  { value: "dirawat", label: "Dirawat" },
   { value: "keluar", label: "Keluar" },
 ];
 
 const statusBar: Record<ResidentStatus, { label: string; bar: string }> = {
   aktif: { label: "Aktif", bar: "bg-emerald-500" },
-  dirawat: { label: "Dirawat", bar: "bg-amber-500" },
   keluar: { label: "Keluar", bar: "bg-zinc-400" },
 };
 
@@ -38,30 +37,32 @@ function csvCell(value: string | number) {
 function buildCsv(rows: Resident[]) {
   const header = [
     "Nama",
+    "Panggilan",
     "Jenis kelamin",
     "Tanggal lahir",
     "Umur",
-    "Kamar",
+    "Ukuran baju",
     "Tanggal masuk",
+    "Lama tinggal",
+    "Rujukan",
+    "Alat bantu",
+    "Catatan kesehatan",
     "Status",
-    "Wali",
-    "Hubungan",
-    "Telepon wali",
-    "Jumlah berkas",
   ];
   const lines = rows.map((r) =>
     [
       r.fullName,
-      r.gender === "L" ? "Laki-laki" : "Perempuan",
-      formatDate(r.birthDate),
+      r.nickname ?? "",
+      genderLabel[r.gender],
+      r.birthDate, // format YYYY-MM-DD supaya Excel membacanya sebagai tanggal
       getAge(r.birthDate),
-      r.roomNumber,
-      formatDate(r.admissionDate),
+      r.clothingSize ?? "",
+      r.admissionDate ? formatAdmission(r.admissionDate, r.admissionApprox) : "",
+      getStay(r.admissionDate),
+      r.referral ?? "",
+      r.mobility ? mobilityLabel[r.mobility] : "",
+      r.healthNotes ?? "",
       r.status,
-      r.guardian.name,
-      r.guardian.relationship,
-      `="${r.guardian.phone}"`, // agar Excel tidak menghapus angka 0 di depan
-      r.documentCount,
     ]
       .map(csvCell)
       .join(",")
@@ -78,7 +79,6 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
     [residents, filter]
   );
 
-  const totalDocs = rows.reduce((n, r) => n + r.documentCount, 0);
 
   function downloadCsv() {
     const blob = new Blob([buildCsv(rows)], { type: "text/csv;charset=utf-8" });
@@ -117,9 +117,9 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
             <TableHeader>
               <TableRow>
                 <TableHead className="pl-6">Nama</TableHead>
-                <TableHead>Kamar</TableHead>
+                <TableHead>Umur</TableHead>
                 <TableHead className="hidden @2xl:table-cell">Masuk</TableHead>
-                <TableHead className="hidden @2xl:table-cell">Berkas</TableHead>
+                <TableHead className="hidden @2xl:table-cell">Alat bantu</TableHead>
                 <TableHead className="pr-6">Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -127,12 +127,12 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
               {rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="pl-6 font-medium">{r.fullName}</TableCell>
-                  <TableCell>{r.roomNumber}</TableCell>
+                  <TableCell>{getAge(r.birthDate)} th</TableCell>
                   <TableCell className="hidden @2xl:table-cell">
-                    {formatDate(r.admissionDate)}
+                    {formatAdmission(r.admissionDate, r.admissionApprox)}
                   </TableCell>
                   <TableCell className="hidden @2xl:table-cell">
-                    {r.documentCount}
+                    {r.mobility ? mobilityLabel[r.mobility] : "-"}
                   </TableCell>
                   <TableCell className="pr-6">
                     <StatusBadge status={r.status} />
@@ -159,7 +159,7 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
         <section className="rounded-3xl border border-border bg-card p-5 shadow-sm @lg:p-6">
           <h2 className="text-base font-semibold tracking-tight">Ekspor laporan</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {rows.length} penghuni · {totalDocs} berkas sesuai filter di samping.
+            {rows.length} penghuni sesuai filter di samping.
           </p>
 
           <div className="mt-5 space-y-2.5">

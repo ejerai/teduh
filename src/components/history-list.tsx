@@ -127,12 +127,16 @@ export function HistoryList({ entries }: { entries: HistoryEntry[] }) {
                         <span className="text-muted-foreground">
                           ({roleLabel[e.role]}) {style.label} untuk
                         </span>{" "}
-                        <Link
-                          href={`/residents/${e.residentId}`}
-                          className="font-medium hover:text-primary"
-                        >
-                          {e.residentName}
-                        </Link>
+                        {e.residentId ? (
+                          <Link
+                            href={`/residents/${e.residentId}`}
+                            className="font-medium hover:text-primary"
+                          >
+                            {e.residentName}
+                          </Link>
+                        ) : (
+                          <span className="font-medium">{e.residentName}</span>
+                        )}
                       </p>
                       <time
                         dateTime={e.timestamp}

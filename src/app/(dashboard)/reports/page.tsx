@@ -1,7 +1,9 @@
 import { ReportPanel } from "@/components/report-panel";
-import { residents } from "@/data/residents";
+import { getResidents } from "@/lib/data";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const residents = await getResidents();
+
   return (
     <div className="mx-auto w-full max-w-[1600px]">
       <h1 className="text-2xl font-semibold tracking-tight @lg:text-3xl">

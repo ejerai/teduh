@@ -1,7 +1,9 @@
 import { HistoryList } from "@/components/history-list";
-import { history } from "@/data/history";
+import { getHistory } from "@/lib/data";
 
-export default function HistoryPage() {
+export default async function HistoryPage() {
+  const history = await getHistory();
+
   return (
     <div className="mx-auto w-full max-w-[1600px]">
       <h1 className="text-2xl font-semibold tracking-tight @lg:text-3xl">

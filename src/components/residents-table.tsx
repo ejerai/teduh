@@ -13,7 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/status-badge";
-import { formatDate, getAge } from "@/lib/format";
+import { formatAdmission, getAge, getStay } from "@/lib/format";
+import { mobilityLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { Resident, ResidentStatus } from "@/types/resident";
 
@@ -22,7 +23,6 @@ type Filter = "semua" | ResidentStatus;
 const filters: { value: Filter; label: string }[] = [
   { value: "semua", label: "Semua" },
   { value: "aktif", label: "Aktif" },
-  { value: "dirawat", label: "Dirawat" },
   { value: "keluar", label: "Keluar" },
 ];
 
@@ -37,8 +37,9 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
       const matchQuery =
         q === "" ||
         r.fullName.toLowerCase().includes(q) ||
-        r.roomNumber.toLowerCase().includes(q) ||
-        r.guardian.name.toLowerCase().includes(q);
+        (r.nickname ?? "").toLowerCase().includes(q) ||
+        (r.referral ?? "").toLowerCase().includes(q) ||
+        (r.healthNotes ?? "").toLowerCase().includes(q);
       return matchStatus && matchQuery;
     });
   }, [residents, query, filter]);
@@ -51,7 +52,7 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cari nama, kamar, atau wali"
+            placeholder="Cari nama, rujukan, atau catatan"
             className="h-11 rounded-2xl border-0 bg-muted pl-10 shadow-none"
           />
         </div>
@@ -74,15 +75,20 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
         </div>
       </div>
 
+      <p className="text-sm text-muted-foreground">
+        {filtered.length} dari {residents.length} penghuni
+      </p>
+
       <div className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="pl-6">Nama</TableHead>
               <TableHead>Umur</TableHead>
-              <TableHead>Kamar</TableHead>
               <TableHead className="hidden @2xl:table-cell">Masuk</TableHead>
-              <TableHead className="hidden @4xl:table-cell">Wali</TableHead>
+              <TableHead className="hidden @2xl:table-cell">Lama tinggal</TableHead>
+              <TableHead className="hidden @4xl:table-cell">Alat bantu</TableHead>
+              <TableHead className="hidden @4xl:table-cell">Rujukan</TableHead>
               <TableHead className="pr-6">Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -93,16 +99,21 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
                   <Link href={`/residents/${r.id}`} className="hover:text-primary">
                     {r.fullName}
                   </Link>
+                  {r.nickname && (
+                    <span className="font-normal text-muted-foreground"> ({r.nickname})</span>
+                  )}
                 </TableCell>
                 <TableCell>{getAge(r.birthDate)} th</TableCell>
-                <TableCell>{r.roomNumber}</TableCell>
                 <TableCell className="hidden @2xl:table-cell">
-                  {formatDate(r.admissionDate)}
+                  {formatAdmission(r.admissionDate, r.admissionApprox)}
+                </TableCell>
+                <TableCell className="hidden @2xl:table-cell">
+                  {getStay(r.admissionDate)}
                 </TableCell>
                 <TableCell className="hidden @4xl:table-cell">
-                  {r.guardian.name}
-                  <span className="text-muted-foreground"> ({r.guardian.relationship})</span>
+                  {r.mobility ? mobilityLabel[r.mobility] : "-"}
                 </TableCell>
+                <TableCell className="hidden @4xl:table-cell">{r.referral ?? "-"}</TableCell>
                 <TableCell className="pr-6">
                   <StatusBadge status={r.status} />
                 </TableCell>
@@ -110,7 +121,7 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                   Tidak ada penghuni yang cocok.
                 </TableCell>
               </TableRow>

@@ -1,30 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { loginAction, type LoginState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
-  const router = useRouter();
+  const [state, action, pending] = useActionState<LoginState, FormData>(loginAction, {});
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    // Sementara langsung masuk ke dashboard. Verifikasi akun dikerjakan di tahap backend.
-    router.push("/dashboard");
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+    <form action={action} className="mt-8 space-y-5">
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium">
           Email
         </Label>
         <Input
           id="email"
+          name="email"
           type="email"
           autoComplete="username"
           required
@@ -40,6 +35,7 @@ export function LoginForm() {
         <div className="relative">
           <Input
             id="password"
+            name="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             required
@@ -57,11 +53,21 @@ export function LoginForm() {
         </div>
       </div>
 
+      {state.error && (
+        <p
+          role="alert"
+          className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800 dark:bg-red-500/10 dark:text-red-300"
+        >
+          {state.error}
+        </p>
+      )}
+
       <Button
         type="submit"
+        disabled={pending}
         className="h-11 w-full rounded-xl text-[15px] font-semibold shadow-[0_8px_20px_-8px_var(--primary)]"
       >
-        Masuk
+        {pending ? "Memeriksa..." : "Masuk"}
       </Button>
     </form>
   );

@@ -10,8 +10,10 @@ import {
   FileBarChart,
   Headset,
   Settings,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
+import { logoutAction } from "@/app/actions/auth";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supportUrl } from "@/lib/config";
@@ -176,6 +178,13 @@ export function Sidebar() {
               </button>
             }
           />
+
+          <form action={logoutAction}>
+            <button type="submit" className={navItemClass(false)}>
+              <LogOut className="size-5 shrink-0" />
+              <Label expanded={expanded}>Keluar</Label>
+            </button>
+          </form>
 
           <div className="mt-2 px-1 pb-1">
             <ThemeToggle compact={!expanded} />

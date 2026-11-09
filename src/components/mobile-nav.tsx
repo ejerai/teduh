@@ -1,6 +1,7 @@
 "use client";
 
-import { Headset, Menu, Settings, X } from "lucide-react";
+import { Headset, LogOut, Menu, Settings, X } from "lucide-react";
+import { logoutAction } from "@/app/actions/auth";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { navItemClass, navItems } from "@/components/sidebar";
 import { supportUrl } from "@/lib/config";
@@ -104,6 +105,12 @@ export function MobileNav() {
               </button>
             }
           />
+          <form action={logoutAction}>
+            <button type="submit" className={navItemClass(false)}>
+              <LogOut className="size-5 shrink-0" />
+              Keluar
+            </button>
+          </form>
           <div className="px-1 pt-3">
             <ThemeToggle />
           </div>

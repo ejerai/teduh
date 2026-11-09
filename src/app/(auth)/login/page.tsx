@@ -1,8 +1,12 @@
 import { HeroArt } from "@/components/hero-art";
 import { LoginForm } from "@/components/login-form";
+import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { getSession } from "@/lib/session";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  if (await getSession()) redirect("/dashboard");
+
   return (
     <main className="grid min-h-screen bg-background lg:grid-cols-2">
       {/* Kolom form */}
@@ -21,7 +25,7 @@ export default function LoginPage() {
           <LoginForm />
 
           <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
-            Lupa kata sandi? Hubungi admin panti. <a className="text-primary" href="https://kemahbeth.vercel.app/dashboard">Lihat dashboard.</a>
+            Lupa kata sandi? Hubungi admin panti.
           </p>
         </div>
       </div>

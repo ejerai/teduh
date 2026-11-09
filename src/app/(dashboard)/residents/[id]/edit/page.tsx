@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ResidentForm } from "@/components/resident-form";
-import { residents } from "@/data/residents";
+import { getResident } from "@/lib/data";
 
 export default async function EditResidentPage({
   params,
@@ -10,7 +10,7 @@ export default async function EditResidentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const resident = residents.find((r) => r.id === id);
+  const resident = await getResident(id);
   if (!resident) notFound();
 
   return (

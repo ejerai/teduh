@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText, Pencil, Phone } from "lucide-react";
+import { ArrowLeft, FileText, Pencil } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
-import { residents } from "@/data/residents";
-import { formatDate, getAge } from "@/lib/format";
+import { getResident } from "@/lib/data";
+import { formatAdmission, formatDate, getAge, getStay } from "@/lib/format";
+import { genderLabel, mobilityLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 function Panel({
@@ -44,13 +45,15 @@ function Field({
   );
 }
 
+const empty = <span className="font-normal text-muted-foreground">Belum dicatat</span>;
+
 export default async function ResidentDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const resident = residents.find((r) => r.id === id);
+  const resident = await getResident(id);
   if (!resident) notFound();
 
   const initials = resident.fullName
@@ -77,12 +80,18 @@ export default async function ResidentDetailPage({
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold tracking-tight @lg:text-3xl">
               {resident.fullName}
+              {resident.nickname && (
+                <span className="font-normal text-muted-foreground">
+                  {" "}
+                  ({resident.nickname})
+                </span>
+              )}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <StatusBadge status={resident.status} />
-              <span>Kamar {resident.roomNumber}</span>
-              <span aria-hidden>·</span>
               <span>{getAge(resident.birthDate)} tahun</span>
+              <span aria-hidden>·</span>
+              <span>Tinggal {getStay(resident.admissionDate)}</span>
             </div>
           </div>
         </div>
@@ -103,9 +112,8 @@ export default async function ResidentDetailPage({
         <Panel title="Data penghuni" className="@4xl:col-span-2">
           <dl className="grid gap-x-6 gap-y-5 @lg:grid-cols-2">
             <Field label="Nama lengkap">{resident.fullName}</Field>
-            <Field label="Jenis kelamin">
-              {resident.gender === "L" ? "Laki-laki" : "Perempuan"}
-            </Field>
+            <Field label="Nama panggilan">{resident.nickname ?? empty}</Field>
+            <Field label="Jenis kelamin">{genderLabel[resident.gender]}</Field>
             <Field label="Tanggal lahir">
               {formatDate(resident.birthDate)}
               <span className="font-normal text-muted-foreground">
@@ -113,30 +121,30 @@ export default async function ResidentDetailPage({
                 ({getAge(resident.birthDate)} tahun)
               </span>
             </Field>
-            <Field label="Tanggal masuk">
-              {formatDate(resident.admissionDate)}
-            </Field>
-            <Field label="Nomor kamar">{resident.roomNumber}</Field>
+            <Field label="Ukuran baju">{resident.clothingSize ?? empty}</Field>
             <Field label="Status">
               <StatusBadge status={resident.status} />
             </Field>
+            <Field label="Tanggal masuk">
+              {resident.admissionDate
+                ? formatAdmission(resident.admissionDate, resident.admissionApprox)
+                : empty}
+              {resident.admissionApprox && (
+                <span className="font-normal text-muted-foreground"> (perkiraan)</span>
+              )}
+            </Field>
+            <Field label="Lama tinggal">{getStay(resident.admissionDate)}</Field>
+            <Field label="Asal rujukan">{resident.referral ?? empty}</Field>
           </dl>
         </Panel>
 
         <div className="space-y-4">
-          <Panel title="Wali / kontak keluarga">
+          <Panel title="Kondisi">
             <dl className="space-y-5">
-              <Field label="Nama">{resident.guardian.name}</Field>
-              <Field label="Hubungan">{resident.guardian.relationship}</Field>
-              <Field label="Telepon">
-                <a
-                  href={`tel:${resident.guardian.phone}`}
-                  className="inline-flex items-center gap-1.5 text-primary hover:underline"
-                >
-                  <Phone className="size-4" />
-                  {resident.guardian.phone}
-                </a>
+              <Field label="Alat bantu">
+                {resident.mobility ? mobilityLabel[resident.mobility] : empty}
               </Field>
+              <Field label="Catatan kesehatan">{resident.healthNotes ?? empty}</Field>
             </dl>
           </Panel>
 
@@ -155,7 +163,7 @@ export default async function ResidentDetailPage({
               </div>
             </div>
             <p className="mt-4 rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-              Unggah dan pratinjau berkas tersedia setelah backend terhubung.
+              Unggah dan pratinjau berkas menyusul.
             </p>
           </Panel>
         </div>

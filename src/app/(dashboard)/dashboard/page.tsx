@@ -1,35 +1,40 @@
 import { FileText, HeartPulse, UserCheck, Users } from "lucide-react";
 import { HeroBanner } from "@/components/hero-banner";
-import { residents } from "@/data/residents";
+import { getResidents } from "@/lib/data";
 
-const stats = [
-  {
-    label: "Total penghuni",
-    value: residents.length,
-    hint: "Terdaftar di sistem",
-    icon: Users,
-  },
-  {
-    label: "Aktif",
-    value: residents.filter((r) => r.status === "aktif").length,
-    hint: "Tinggal di panti",
-    icon: UserCheck,
-  },
-  {
-    label: "Dirawat",
-    value: residents.filter((r) => r.status === "dirawat").length,
-    hint: "Sedang dalam perawatan",
-    icon: HeartPulse,
-  },
-  {
-    label: "Berkas",
-    value: residents.reduce((total, r) => total + r.documentCount, 0),
-    hint: "Dokumen terunggah",
-    icon: FileText,
-  },
-];
+export default async function DashboardPage() {
+  const residents = await getResidents();
+  const withAid = residents.filter(
+    (r) => r.mobility && r.mobility !== "mandiri",
+  ).length;
 
-export default function DashboardPage() {
+  const stats = [
+    {
+      label: "Total penghuni",
+      value: residents.length,
+      hint: "Terdaftar di sistem",
+      icon: Users,
+    },
+    {
+      label: "Aktif",
+      value: residents.filter((r) => r.status === "aktif").length,
+      hint: "Tinggal di panti",
+      icon: UserCheck,
+    },
+    {
+      label: "Alat bantu",
+      value: withAid,
+      hint: "Tongkat, kursi roda, bed rest",
+      icon: HeartPulse,
+    },
+    {
+      label: "Berkas",
+      value: residents.reduce((total, r) => total + r.documentCount, 0),
+      hint: "Dokumen terunggah",
+      icon: FileText,
+    },
+  ];
+
   return (
     <div className="mx-auto w-full max-w-[1600px]">
       <h1 className="text-2xl font-semibold tracking-tight @lg:text-3xl">

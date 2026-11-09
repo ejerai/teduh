@@ -1,19 +1,20 @@
-export type ResidentStatus = "aktif" | "dirawat" | "keluar";
-
-export interface Guardian {
-  name: string;
-  relationship: string;
-  phone: string;
-}
+export type ResidentStatus = "aktif" | "keluar";
+export type Gender = "L" | "P";
+export type ClothingSize = "S" | "M" | "L" | "XL" | "XXL";
+export type Mobility = "mandiri" | "tongkat" | "kursi_roda" | "bed_rest";
 
 export interface Resident {
   id: string;
   fullName: string;
-  gender: "L" | "P";
-  birthDate: string; // format YYYY-MM-DD
-  roomNumber: string;
-  admissionDate: string;
+  nickname: string | null;
+  gender: Gender;
+  birthDate: string; // YYYY-MM-DD
+  clothingSize: ClothingSize | null;
+  admissionDate: string | null; // YYYY-MM-DD
+  admissionApprox: boolean; // true = tanggal masuk hanya perkiraan dari lama tinggal
+  referral: string | null;
+  mobility: Mobility | null;
+  healthNotes: string | null;
   status: ResidentStatus;
-  guardian: Guardian;
   documentCount: number;
 }

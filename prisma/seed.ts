@@ -45,6 +45,16 @@ function monthsBefore(isoDate: string, months: number) {
 async function main() {
   const { file, source } = loadSeedFile();
 
+  // Pengaman: seed menghapus SEMUA data. Jangan sampai terjadi tanpa sengaja setelah panti mulai memakai sistem.
+  const existing = await prisma.resident.count();
+  if (existing > 0 && process.env.SEED_RESET !== "1") {
+    console.error(
+      `Database sudah berisi ${existing} penghuni. Seed dibatalkan supaya data tidak terhapus.\n` +
+        `Jika memang ingin mengulang dari nol, jalankan dengan SEED_RESET=1 (PowerShell: $env:SEED_RESET=1; npx prisma db seed).`,
+    );
+    return;
+  }
+
   // Bersihkan dulu (urutan penting karena ada relasi)
   await prisma.historyEntry.deleteMany();
   await prisma.document.deleteMany();
@@ -52,7 +62,8 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Satu-satunya akun pengurus. GANTI email dan kata sandi sebelum dipakai sungguhan.
-  const passwordHash = await bcrypt.hash("teduh123", 10);
+  const initialPassword = process.env.SEED_ADMIN_PASSWORD ?? "teduh123";
+  const passwordHash = await bcrypt.hash(initialPassword, 10);
   await prisma.user.create({
     data: {
       name: "Ibu Hana",
