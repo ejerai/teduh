@@ -42,6 +42,7 @@ enum HistoryAction {
   tambah
   ubah
   berkas
+  hapus
 }
 
 model User {

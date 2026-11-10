@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, Pencil } from "lucide-react";
+import { DeleteResidentDialog } from "@/components/delete-resident-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import { getResident } from "@/lib/data";
+import { getSession } from "@/lib/session";
 import { formatAdmission, formatDate, getAge, getStay } from "@/lib/format";
 import { genderLabel, mobilityLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
@@ -56,6 +58,10 @@ export default async function ResidentDetailPage({
   const resident = await getResident(id);
   if (!resident) notFound();
 
+  // Pengasuh hanya boleh melihat data, jadi tombol ubah dan hapus disembunyikan.
+  const user = await getSession();
+  const canEdit = !!user && user.role !== "pengasuh";
+
   const initials = resident.fullName
     .split(" ")
     .slice(0, 2)
@@ -78,7 +84,7 @@ export default async function ResidentDetailPage({
             {initials}
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-semibold tracking-tight @lg:text-3xl">
+            <h1 className="break-words text-2xl font-semibold tracking-tight @lg:text-3xl">
               {resident.fullName}
               {resident.nickname && (
                 <span className="font-normal text-muted-foreground">
@@ -96,16 +102,21 @@ export default async function ResidentDetailPage({
           </div>
         </div>
 
-        <Link
-          href={`/residents/${resident.id}/edit`}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-10 rounded-xl px-4"
-          )}
-        >
-          <Pencil className="size-4" />
-          Ubah data
-        </Link>
+        {canEdit && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/residents/${resident.id}/edit`}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "h-10 rounded-xl px-4"
+              )}
+            >
+              <Pencil className="size-4" />
+              Ubah data
+            </Link>
+            <DeleteResidentDialog id={resident.id} name={resident.fullName} />
+          </div>
+        )}
       </div>
 
       <div className="mt-6 grid gap-4 @4xl:grid-cols-3">

@@ -1,0 +1,7 @@
+Cara memakai:
+1. Salin semua folder di zip ini ke folder project teduh (timpa file yang sama).
+2. Di terminal project: npm install jspdf jspdf-autotable
+3. Di Neon SQL Editor jalankan sekali:
+   ALTER TYPE "HistoryAction" ADD VALUE 'hapus';
+4. npx prisma generate
+5. npm run dev, coba dulu di lokal, lalu git add -A, git commit, git push.

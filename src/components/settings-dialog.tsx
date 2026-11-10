@@ -315,6 +315,7 @@ function AppearanceTab() {
 const permissions: { label: string; access: [boolean, boolean, boolean] }[] = [
   { label: "Melihat data penghuni", access: [true, true, true] },
   { label: "Menambah dan mengubah penghuni", access: [true, true, false] },
+  { label: "Menghapus penghuni (dengan alasan)", access: [true, true, false] },
   { label: "Memperbarui status perawatan", access: [true, true, true] },
   { label: "Mengunggah berkas", access: [true, true, false] },
   { label: "Melihat riwayat perubahan", access: [true, true, true] },

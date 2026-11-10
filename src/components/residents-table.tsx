@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ResidentCard } from "@/components/resident-card";
 import { StatusBadge } from "@/components/status-badge";
 import { formatAdmission, getAge, getStay } from "@/lib/format";
 import { mobilityLabel } from "@/lib/labels";
@@ -79,16 +80,29 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
         {filtered.length} dari {residents.length} penghuni
       </p>
 
-      <div className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border">
+      {/* Layar kecil (HP dan tablet tegak): kartu dengan semua data */}
+      <div className="space-y-3 @4xl:hidden">
+        {filtered.map((r) => (
+          <ResidentCard key={r.id} resident={r} href={`/residents/${r.id}`} />
+        ))}
+        {filtered.length === 0 && (
+          <p className="rounded-3xl bg-card py-10 text-center text-sm text-muted-foreground shadow-sm ring-1 ring-border">
+            Tidak ada penghuni yang cocok.
+          </p>
+        )}
+      </div>
+
+      {/* Layar lebar: tabel */}
+      <div className="hidden overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border @4xl:block">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="pl-6">Nama</TableHead>
               <TableHead>Umur</TableHead>
-              <TableHead className="hidden @2xl:table-cell">Masuk</TableHead>
-              <TableHead className="hidden @2xl:table-cell">Lama tinggal</TableHead>
-              <TableHead className="hidden @4xl:table-cell">Alat bantu</TableHead>
-              <TableHead className="hidden @4xl:table-cell">Rujukan</TableHead>
+              <TableHead>Masuk</TableHead>
+              <TableHead>Lama tinggal</TableHead>
+              <TableHead>Alat bantu</TableHead>
+              <TableHead>Rujukan</TableHead>
               <TableHead className="pr-6">Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -104,16 +118,12 @@ export function ResidentsTable({ residents }: { residents: Resident[] }) {
                   )}
                 </TableCell>
                 <TableCell>{getAge(r.birthDate)} th</TableCell>
-                <TableCell className="hidden @2xl:table-cell">
+                <TableCell>
                   {formatAdmission(r.admissionDate, r.admissionApprox)}
                 </TableCell>
-                <TableCell className="hidden @2xl:table-cell">
-                  {getStay(r.admissionDate)}
-                </TableCell>
-                <TableCell className="hidden @4xl:table-cell">
-                  {r.mobility ? mobilityLabel[r.mobility] : "-"}
-                </TableCell>
-                <TableCell className="hidden @4xl:table-cell">{r.referral ?? "-"}</TableCell>
+                <TableCell>{getStay(r.admissionDate)}</TableCell>
+                <TableCell>{r.mobility ? mobilityLabel[r.mobility] : "-"}</TableCell>
+                <TableCell>{r.referral ?? "-"}</TableCell>
                 <TableCell className="pr-6">
                   <StatusBadge status={r.status} />
                 </TableCell>

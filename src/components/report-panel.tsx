@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, FileText } from "lucide-react";
+import { ResidentCard } from "@/components/resident-card";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { formatAdmission, getAge, getStay } from "@/lib/format";
 import { genderLabel, mobilityLabel } from "@/lib/labels";
+import { downloadResidentsPdf } from "@/lib/report-pdf";
 import { cn } from "@/lib/utils";
 import type { Resident, ResidentStatus } from "@/types/resident";
 
@@ -73,6 +75,8 @@ function buildCsv(rows: Resident[]) {
 
 export function ReportPanel({ residents }: { residents: Resident[] }) {
   const [filter, setFilter] = useState<Filter>("semua");
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const rows = useMemo(
     () => residents.filter((r) => filter === "semua" || r.status === filter),
@@ -89,6 +93,19 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
     a.download = `laporan-penghuni-${today}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function downloadPdf() {
+    setPdfError(null);
+    setPdfBusy(true);
+    try {
+      const label = filters.find((f) => f.value === filter)?.label ?? "Semua";
+      await downloadResidentsPdf(rows, label);
+    } catch {
+      setPdfError("PDF gagal dibuat. Coba lagi, atau pakai CSV.");
+    } finally {
+      setPdfBusy(false);
+    }
   }
 
   return (
@@ -112,14 +129,27 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border">
+        {/* Layar kecil: kartu dengan semua data */}
+        <div className="space-y-3 @4xl:hidden">
+          {rows.map((r) => (
+            <ResidentCard key={r.id} resident={r} />
+          ))}
+          {rows.length === 0 && (
+            <p className="rounded-3xl bg-card py-10 text-center text-sm text-muted-foreground shadow-sm ring-1 ring-border">
+              Tidak ada data untuk filter ini.
+            </p>
+          )}
+        </div>
+
+        {/* Layar lebar: tabel */}
+        <div className="hidden overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border @4xl:block">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="pl-6">Nama</TableHead>
                 <TableHead>Umur</TableHead>
-                <TableHead className="hidden @2xl:table-cell">Masuk</TableHead>
-                <TableHead className="hidden @2xl:table-cell">Alat bantu</TableHead>
+                <TableHead>Masuk</TableHead>
+                <TableHead>Alat bantu</TableHead>
                 <TableHead className="pr-6">Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -128,12 +158,10 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
                 <TableRow key={r.id}>
                   <TableCell className="pl-6 font-medium">{r.fullName}</TableCell>
                   <TableCell>{getAge(r.birthDate)} th</TableCell>
-                  <TableCell className="hidden @2xl:table-cell">
+                  <TableCell>
                     {formatAdmission(r.admissionDate, r.admissionApprox)}
                   </TableCell>
-                  <TableCell className="hidden @2xl:table-cell">
-                    {r.mobility ? mobilityLabel[r.mobility] : "-"}
-                  </TableCell>
+                  <TableCell>{r.mobility ? mobilityLabel[r.mobility] : "-"}</TableCell>
                   <TableCell className="pr-6">
                     <StatusBadge status={r.status} />
                   </TableCell>
@@ -159,7 +187,7 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
         <section className="rounded-3xl border border-border bg-card p-5 shadow-sm @lg:p-6">
           <h2 className="text-base font-semibold tracking-tight">Ekspor laporan</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {rows.length} penghuni sesuai filter di samping.
+            {rows.length} penghuni sesuai filter yang dipilih.
           </p>
 
           <div className="mt-5 space-y-2.5">
@@ -175,21 +203,18 @@ export function ReportPanel({ residents }: { residents: Resident[] }) {
             <Button
               type="button"
               variant="outline"
-              disabled
-              className="h-11 w-full rounded-xl"
-            >
-              <FileSpreadsheet className="size-4" />
-              Excel (.xlsx) · segera
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled
-              className="h-11 w-full rounded-xl"
+              onClick={downloadPdf}
+              disabled={rows.length === 0 || pdfBusy}
+              className="h-11 w-full rounded-xl text-[15px] font-semibold"
             >
               <FileText className="size-4" />
-              PDF · segera
+              {pdfBusy ? "Membuat PDF..." : "Unduh PDF"}
             </Button>
+            {pdfError && (
+              <p role="alert" className="text-sm text-destructive">
+                {pdfError}
+              </p>
+            )}
           </div>
         </section>
 

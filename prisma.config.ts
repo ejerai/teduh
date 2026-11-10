@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
-// File ini harus bernama prisma.config.ts supaya otomatis dikenali Prisma CLI.
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {

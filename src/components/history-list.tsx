@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { FileText, Pencil, Plus, Search, type LucideIcon } from "lucide-react";
+import { FileText, Pencil, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ const filters: { value: Filter; label: string }[] = [
   { value: "tambah", label: "Tambah" },
   { value: "ubah", label: "Ubah" },
   { value: "berkas", label: "Berkas" },
+  { value: "hapus", label: "Hapus" },
 ];
 
 const actionStyle: Record<
@@ -37,6 +38,11 @@ const actionStyle: Record<
     label: "mengunggah berkas",
     className:
       "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  },
+  hapus: {
+    icon: Trash2,
+    label: "menghapus penghuni",
+    className: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
   },
 };
 

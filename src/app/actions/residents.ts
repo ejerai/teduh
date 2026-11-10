@@ -192,3 +192,45 @@ export async function updateResidentAction(
   refresh();
   redirect(`/residents/${id}`);
 }
+
+export type DeleteResidentResult = { ok: false; message: string };
+
+const MIN_REASON = 5;
+const MAX_REASON = 500;
+
+/**
+ * Menghapus penghuni beserta berkasnya. Alasan wajib diisi dan dicatat di riwayat.
+ * Nama penghuni disalin ke riwayat, jadi catatannya tetap terbaca setelah datanya hilang.
+ */
+export async function deleteResidentAction(
+  id: string,
+  reason: string,
+): Promise<DeleteResidentResult> {
+  const auth = await authorize();
+  if ("error" in auth) return { ok: false, message: auth.error ?? "Tidak diizinkan." };
+
+  const cleanReason = reason.trim();
+  if (cleanReason.length < MIN_REASON)
+    return { ok: false, message: `Alasan penghapusan wajib diisi (minimal ${MIN_REASON} karakter).` };
+  if (cleanReason.length > MAX_REASON)
+    return { ok: false, message: `Alasan terlalu panjang (maksimal ${MAX_REASON} karakter).` };
+
+  const resident = await prisma.resident.findUnique({ where: { id } });
+  if (!resident) return { ok: false, message: "Data penghuni tidak ditemukan atau sudah dihapus." };
+
+  await prisma.$transaction(async (tx) => {
+    await tx.historyEntry.create({
+      data: {
+        action: "hapus",
+        summary: `Dihapus dari sistem. Alasan: ${cleanReason}`,
+        residentName: resident.fullName,
+        residentId: null, // datanya akan hilang, jadi tidak ada yang bisa ditautkan
+        actorId: auth.user.id,
+      },
+    });
+    await tx.resident.delete({ where: { id } });
+  });
+
+  refresh();
+  redirect("/residents");
+}

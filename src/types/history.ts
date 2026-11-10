@@ -1,4 +1,4 @@
-export type HistoryAction = "tambah" | "ubah" | "berkas";
+export type HistoryAction = "tambah" | "ubah" | "berkas" | "hapus";
 export type StaffRole = "admin" | "petugas" | "pengasuh";
 
 export interface HistoryEntry {
